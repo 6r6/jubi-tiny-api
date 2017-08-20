@@ -21,12 +21,11 @@ class Jubi(object):
         self.private_key = private_key
 
     def get_nonce(self):
-        lens = 12
         curr_stamp = time.time()*100
         nonce = int(curr_stamp)
         return nonce
 
-    def get_hash(self,s):
+    def get_md5(self,s):
         m = hashlib.md5()
         m.update(s.encode())
         return m.hexdigest()
@@ -35,18 +34,14 @@ class Jubi(object):
         nonce_value = self.get_nonce()
         key_value = self.public_key
         private_key = self.private_key
-        msg = 'nonce=' + str(nonce_value) + '&' + 'key=' + key_value
-        msg = msg.encode('utf-8')
-        key = self.get_hash(private_key)
-        key = key.encode('utf-8')
-        signature = hmac.new(key, msg, digestmod=hashlib.sha256).hexdigest()
+        string = ('nonce=' + str(nonce_value) + '&' + 'key=' + key_value).encode('utf-8')
+        private_key_md5 = self.get_md5(private_key).encode('utf-8')
+        signature = hmac.new(private_key_md5, string, digestmod=hashlib.sha256).hexdigest()
         dict_ordered = collections.OrderedDict()
         dict_ordered['signature'] = signature
         dict_ordered['nonce'] = nonce_value
         dict_ordered['key'] = key_value
-        #output_dict = {'nonce': nonce_value, 'key': key_value, 'signature': signature}
         return dict_ordered
-
 
 
 #jubi = Jubi('your_public_key','your_private_key')
